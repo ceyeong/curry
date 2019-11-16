@@ -22,6 +22,9 @@ func Start() {
 		e.Logger.Fatal("Failed to Initalize database")
 	}
 
+	//append routes
 	route(e)
+
+	//start server
 	e.Logger.Fatal(e.Start(":8000"))
 }
