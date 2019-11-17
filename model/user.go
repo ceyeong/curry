@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -46,6 +47,7 @@ type UserRank struct {
 // HashPassword : hash user password
 func (user *User) HashPassword() error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	fmt.Println(string(hash))
 	if err != nil {
 		return err
 	}
