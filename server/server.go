@@ -26,9 +26,6 @@ func Start() {
 		e.Logger.Fatal("Failed to Initalize database")
 	}
 
-	//initialize jwt auth
-	e.Use(jwt())
-
 	//append routes
 	route(e)
 
@@ -47,7 +44,7 @@ func jwt() echo.MiddlewareFunc {
 			return err
 		},
 		Skipper: func(c echo.Context) bool {
-			if c.Path() == "/login" || c.Path() == "/register" {
+			if c.Path() == "/api/v1/login" || c.Path() == "/api/v1/register" {
 				return true
 			}
 			return false

@@ -7,8 +7,10 @@ import (
 )
 
 func route(e *echo.Echo) {
-	e.POST("/register", handler.RegisterUser)
-	e.POST("/login", handler.LoginUser)
+	apiV1 := e.Group("/api/v1", jwt())
 
-	e.GET("/me", handler.Me)
+	apiV1.POST("/register", handler.RegisterUser)
+	apiV1.POST("/login", handler.LoginUser)
+
+	apiV1.GET("/me", handler.Me)
 }
