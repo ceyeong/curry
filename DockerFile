@@ -15,7 +15,7 @@ COPY . .
 #build the app
 RUN go build -o app .
 
-#expose port 8080
+#expose port 8000
 EXPOSE 8000
 
 #run the executable
