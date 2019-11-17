@@ -1,7 +1,11 @@
 package server
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 
 	"github.com/ceyeong/curry/database"
 
@@ -22,9 +26,32 @@ func Start() {
 		e.Logger.Fatal("Failed to Initalize database")
 	}
 
+	//initialize jwt auth
+	e.Use(jwt())
+
 	//append routes
 	route(e)
 
 	//start server
 	e.Logger.Fatal(e.Start(":8000"))
+}
+
+// initialize Jwt middleware and return
+func jwt() echo.MiddlewareFunc {
+	config := middleware.JWTConfig{
+		SigningKey: []byte(os.Getenv("secret")),
+		ErrorHandler: func(err error) error {
+			if err == middleware.ErrJWTMissing {
+				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+			}
+			return err
+		},
+		Skipper: func(c echo.Context) bool {
+			if c.Path() == "/login" || c.Path() == "/register" {
+				return true
+			}
+			return false
+		},
+	}
+	return middleware.JWTWithConfig(config)
 }

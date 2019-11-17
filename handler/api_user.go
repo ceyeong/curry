@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ceyeong/curry/database"
@@ -52,8 +53,11 @@ func RegisterUser(c echo.Context) error {
 	user.UpdatedAt = time.Now()
 	user.PasswordUpdatedAt = time.Now()
 
+	//hash user password
+	user.HashPassword()
+
 	// insert user to collection
-	res, err := collection.InsertOne(context.TODO(), u)
+	res, err := collection.InsertOne(context.TODO(), user)
 
 	if err != nil {
 		return err
@@ -65,7 +69,46 @@ func RegisterUser(c echo.Context) error {
 
 // LoginUser : POST /login
 func LoginUser(c echo.Context) error {
-	return nil
+	u := echo.Map{}
+	if err := c.Bind(&u); err != nil {
+		return err
+	}
+
+	v := validate.Map(u)
+	v.StringRule("password", "required|string|minLen:6|maxLen:25")
+	v.StringRule("email", "required|email")
+
+	if !v.Validate() {
+		return c.JSON(http.StatusUnauthorized, echo.Map{"error": v.Errors})
+	}
+
+	safeData := v.SafeData()
+	email := safeData["email"].(string)
+	password := safeData["password"].(string)
+
+	collection := database.Database.Collection("user")
+
+	user := new(model.User)
+	//search for user via email; if not found return error
+	if err := collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user); err != nil {
+		return echo.ErrUnauthorized
+	}
+	if err := user.ComparePassword(password); err != nil {
+		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "user or password doesn't match"})
+	}
+
+	//generate token
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user_id"] = user.ID
+	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
+
+	t, err := token.SignedString([]byte(os.Getenv("secret")))
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, echo.Map{"token": t})
 }
 
 // Me : GET /me
@@ -73,13 +116,6 @@ func Me(c echo.Context) error {
 	token := c.Get("user").(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
 	userID := claims["user_id"].(string)
-	exp := claims["exp"].(string)
-
-	//parse expiry time and compare it.
-	expTime, _ := time.Parse(time.RFC3339, exp)
-	if expTime.Before(time.Now()) {
-		return echo.ErrUnauthorized
-	}
 
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {

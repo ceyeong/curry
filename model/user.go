@@ -3,6 +3,8 @@ package model
 import (
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -39,4 +41,22 @@ type UserRole struct {
 type UserRank struct {
 	Name string `json:"name,omitempty"`
 	Code string `json:"code,omitempty"`
+}
+
+// HashPassword : hash user password
+func (user *User) HashPassword() error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hash)
+	return nil
+}
+
+// ComparePassword : compares the password. returns nil if match
+func (user *User) ComparePassword(password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return err
+	}
+	return nil
 }
