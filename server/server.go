@@ -26,7 +26,10 @@ func Start() {
 		e.Logger.Fatalf("Failed to Initalize database.\n %s", err.Error())
 	}
 	//middlewares
+	//logger
 	e.Use(middleware.Logger())
+	//recover
+	e.Use(middleware.Recover())
 
 	//append routes
 	route(e)
