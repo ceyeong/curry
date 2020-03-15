@@ -18,13 +18,15 @@ func Start() {
 
 	//load environment variables
 	if err := godotenv.Load(); err != nil {
-		e.Logger.Fatal("Failed to load environment variables")
+		e.Logger.Fatalf("Failed to load environment variables. %s", err.Error())
 	}
 
 	//initialize database instance
 	if err := database.InitDatabase(); err != nil {
-		e.Logger.Fatal("Failed to Initalize database")
+		e.Logger.Fatalf("Failed to Initalize database.\n %s", err.Error())
 	}
+	//middlewares
+	e.Use(middleware.Logger())
 
 	//append routes
 	route(e)
@@ -36,7 +38,7 @@ func Start() {
 // initialize Jwt middleware and return
 func jwt() echo.MiddlewareFunc {
 	config := middleware.JWTConfig{
-		SigningKey: []byte(os.Getenv("secret")),
+		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 		ErrorHandler: func(err error) error {
 			if err == middleware.ErrJWTMissing {
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
