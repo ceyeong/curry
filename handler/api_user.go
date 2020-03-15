@@ -33,7 +33,7 @@ func RegisterUser(c echo.Context) error {
 	}
 
 	// check if user already exists
-	collection := database.Database.Collection("user")
+	collection := database.GetDatabase().Collection("user")
 	user := new(model.User)
 	safeUser := v.SafeData()
 	err := collection.FindOne(context.TODO(), bson.M{"email": safeUser["email"]}).Decode(&user)
@@ -86,7 +86,7 @@ func LoginUser(c echo.Context) error {
 	email := safeData["email"].(string)
 	password := safeData["password"].(string)
 
-	collection := database.Database.Collection("user")
+	collection := database.GetDatabase().Collection("user")
 
 	user := model.NewUser()
 	//search for user via email; if not found return error
@@ -122,7 +122,7 @@ func Me(c echo.Context) error {
 		return err
 	}
 
-	collection := database.Database.Collection("user")
+	collection := database.GetDatabase().Collection("user")
 
 	user := new(model.User)
 	if err := collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&user); err != nil {

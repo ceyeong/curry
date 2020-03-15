@@ -10,7 +10,7 @@ import (
 )
 
 // Database : Main DB instance
-var Database *mongo.Database
+var database *mongo.Database
 
 // InitDatabase : Initialize db instance
 func InitDatabase() error {
@@ -33,6 +33,11 @@ func InitDatabase() error {
 	}
 
 	//Get instance of db & return nil error
-	Database = dbClient.Database(os.Getenv("MONGO_DB"))
+	database = dbClient.Database(os.Getenv("MONGO_DB"))
 	return nil
+}
+
+// GetDatabase returns current database
+func GetDatabase() *mongo.Database {
+	return database
 }
