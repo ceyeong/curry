@@ -113,21 +113,15 @@ func LoginUser(c echo.Context) error {
 
 // Me : GET /me
 func Me(c echo.Context) error {
-	token := c.Get("user").(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
-	userID := claims["user_id"].(string)
-
+	userID := c.Get("user").(string)
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return err
 	}
-
 	collection := database.GetDatabase().Collection("user")
-
 	user := new(model.User)
 	if err := collection.FindOne(context.TODO(), bson.M{"_id": objectID}).Decode(&user); err != nil {
 		return err
 	}
-
 	return c.JSON(http.StatusOK, user)
 }

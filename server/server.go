@@ -4,12 +4,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ceyeong/curry/database"
+	jwtlib "github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-
-	"github.com/ceyeong/curry/database"
-
-	"github.com/joho/godotenv"
 )
 
 // Start : Starts server
@@ -47,6 +46,14 @@ func jwt() echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
 			return err
+		},
+		SuccessHandler: func(c echo.Context) {
+			//extract user ID from token
+			token := c.Get("user").(*jwtlib.Token)
+			claims := token.Claims.(jwtlib.MapClaims)
+			userID := claims["user_id"].(string)
+			//set it to access globally
+			c.Set("user", userID)
 		},
 		Skipper: func(c echo.Context) bool {
 			if c.Path() == "/api/v1/login" || c.Path() == "/api/v1/register" {
