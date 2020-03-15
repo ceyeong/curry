@@ -19,11 +19,11 @@ import (
 // RegisterUser : POST /register
 func RegisterUser(c echo.Context) error {
 
-	u := echo.Map{}
-	if err := c.Bind(&u); err != nil {
+	u := model.NewUser()
+	if err := c.Bind(u); err != nil {
 		return err
 	}
-	v := validate.Map(u)
+	v := validate.Struct(u)
 
 	v.AddRule("name", "required")
 	v.StringRule("password", "required|string|minLen:6|maxLen:25")
@@ -69,12 +69,12 @@ func RegisterUser(c echo.Context) error {
 
 // LoginUser : POST /login
 func LoginUser(c echo.Context) error {
-	u := echo.Map{}
-	if err := c.Bind(&u); err != nil {
+	u := model.NewUser()
+	if err := c.Bind(u); err != nil {
 		return err
 	}
 
-	v := validate.Map(u)
+	v := validate.Struct(u)
 	v.StringRule("password", "required|string|minLen:6|maxLen:25")
 	v.StringRule("email", "required|email")
 
@@ -88,7 +88,7 @@ func LoginUser(c echo.Context) error {
 
 	collection := database.Database.Collection("user")
 
-	user := new(model.User)
+	user := model.NewUser()
 	//search for user via email; if not found return error
 	if err := collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user); err != nil {
 		return echo.ErrUnauthorized
@@ -104,7 +104,7 @@ func LoginUser(c echo.Context) error {
 	claims["user_id"] = user.ID
 	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
 
-	t, err := token.SignedString([]byte(os.Getenv("secret")))
+	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return err
 	}

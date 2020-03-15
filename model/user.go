@@ -62,3 +62,8 @@ func (user *User) ComparePassword(password string) error {
 	}
 	return nil
 }
+
+// NewUser returns new User instance.
+func NewUser() *User {
+	return new(User)
+}
