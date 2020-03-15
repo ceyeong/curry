@@ -45,6 +45,10 @@ func jwt() echo.MiddlewareFunc {
 			if err == middleware.ErrJWTMissing {
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
+			//todo check by type
+			if err.Error() == "Token is expired" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "token expired")
+			}
 			return err
 		},
 		SuccessHandler: func(c echo.Context) {
