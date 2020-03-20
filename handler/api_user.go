@@ -96,15 +96,7 @@ func LoginUser(c echo.Context) error {
 	if err := user.ComparePassword(password); err != nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "user or password doesn't match"})
 	}
-
-	//generate token
-	token := jwt.New(jwt.SigningMethodHS256)
-
-	claims := token.Claims.(jwt.MapClaims)
-	claims["user_id"] = user.ID
-	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
-
-	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	t, err := generateJwtToken(*user)
 	if err != nil {
 		return err
 	}
@@ -114,6 +106,7 @@ func LoginUser(c echo.Context) error {
 // Me : GET /me
 func Me(c echo.Context) error {
 	userID := c.Get("user").(string)
+	print(userID)
 	objectID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return err
@@ -124,4 +117,18 @@ func Me(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+// generates jwt token
+func generateJwtToken(user model.User) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user_id"] = user.ID
+	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
+
+	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return t, err
+	}
+	return t, nil
 }
