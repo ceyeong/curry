@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:latest-alpine
 
 #set working dir
 WORKDIR /app
