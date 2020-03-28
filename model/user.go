@@ -20,30 +20,6 @@ type User struct {
 	PasswordUpdatedAt time.Time          `json:"passwordUpdatedAt,omitempty" bson:"passwordUpdatedAt,omitempty"`
 }
 
-// EmployeeRank :
-type EmployeeRank struct {
-	Employee User
-	Rank     UserRank
-}
-
-// Role :
-type Role struct {
-	Employee User     `json:"user"`
-	Role     UserRole `json:"role"`
-}
-
-// UserRole :
-type UserRole struct {
-	Code     int    `json:"code,omitempty"`
-	CodeName string `json:"codeName,omitempty"`
-}
-
-// UserRank :
-type UserRank struct {
-	Name string `json:"name,omitempty"`
-	Code string `json:"code,omitempty"`
-}
-
 // HashPassword : hash user password
 func (user *User) HashPassword() error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)

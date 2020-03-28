@@ -3,7 +3,6 @@ module github.com/ceyeong/curry
 go 1.13
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gookit/validate v1.2.0
 	github.com/gorilla/sessions v1.2.0
