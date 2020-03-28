@@ -3,13 +3,11 @@ package handler
 import (
 	"context"
 	"net/http"
-	"os"
 	"time"
 
 	cctx "github.com/ceyeong/curry/context"
 	"github.com/ceyeong/curry/database"
 	"github.com/ceyeong/curry/model"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gookit/validate"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -97,19 +95,15 @@ func LoginUser(c echo.Context) error {
 	if err := user.ComparePassword(password); err != nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "user or password doesn't match"})
 	}
-	t, err := generateJwtToken(*user)
-	if err != nil {
-		return err
-	}
 	cc := c.(*cctx.CurryContext)
-	err = cc.SetToSession("userID", user.ID.Hex())
+	err := cc.SetToSession("userID", user.ID.Hex())
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, echo.Map{"token": t})
+	return c.JSON(http.StatusOK, echo.Map{"message": "success"})
 }
 
-// Logout : POST /logout
+// LogoutUser : POST /logout
 func LogoutUser(c echo.Context) error {
 	cc := c.(*cctx.CurryContext)
 	err := cc.ClearSession()
@@ -141,21 +135,5 @@ func Me(c echo.Context) error {
 
 // Csrf : GET /csrf
 func Csrf(c echo.Context) error {
-	print(c.Request().Header.Get("origin"))
-	print("FUCK")
 	return c.NoContent(http.StatusOK)
-}
-
-// generates jwt token
-func generateJwtToken(user model.User) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["user_id"] = user.ID
-	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
-
-	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-	if err != nil {
-		return t, err
-	}
-	return t, nil
 }
