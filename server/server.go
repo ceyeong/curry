@@ -1,11 +1,14 @@
 package server
 
 import (
+	"os"
+
 	"github.com/ceyeong/curry/database"
 	mid "github.com/ceyeong/curry/middleware"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // Start : Starts server
@@ -37,6 +40,13 @@ func Start() {
 	e.Use(mid.SessionAuth())
 	//append routes
 	route(e)
+
+	e.AutoTLSManager = autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(os.Getenv("HOST")),
+		Cache:      autocert.DirCache("certs"),
+	}
+
 	//start server
-	e.Logger.Fatal(e.Start(getHost()))
+	e.Logger.Fatal(e.StartAutoTLS(getHost()))
 }
