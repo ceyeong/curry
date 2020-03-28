@@ -1,6 +1,8 @@
 package server
 
 import (
+	"os"
+
 	"github.com/ceyeong/curry/context"
 	"github.com/labstack/echo/v4"
 )
@@ -11,4 +13,9 @@ func curryContext(next echo.HandlerFunc) echo.HandlerFunc {
 		cc := &context.CurryContext{Context: c}
 		return next(cc)
 	}
+}
+
+//getHost
+func getHost() string {
+	return os.Getenv("HOST") + ":" + os.Getenv("PORT")
 }
