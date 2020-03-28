@@ -6,11 +6,12 @@ import (
 	"os"
 	"time"
 
+	cctx "github.com/ceyeong/curry/context"
 	"github.com/ceyeong/curry/database"
 	"github.com/ceyeong/curry/model"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gookit/validate"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -100,14 +101,33 @@ func LoginUser(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	cc := c.(*cctx.CurryContext)
+	err = cc.SetToSession("userID", user.ID.Hex())
+	if err != nil {
+		return err
+	}
 	return c.JSON(http.StatusOK, echo.Map{"token": t})
+}
+
+// Logout : POST /logout
+func LogoutUser(c echo.Context) error {
+	cc := c.(*cctx.CurryContext)
+	err := cc.ClearSession()
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusOK)
 }
 
 // Me : GET /me
 func Me(c echo.Context) error {
-	userID := c.Get("user").(string)
-	print(userID)
-	objectID, err := primitive.ObjectIDFromHex(userID)
+	cc := c.(*cctx.CurryContext)
+
+	uID, err := cc.GetFromSession("userID")
+	if err != nil {
+		return err
+	}
+	objectID, err := primitive.ObjectIDFromHex(uID.(string))
 	if err != nil {
 		return err
 	}
@@ -117,6 +137,13 @@ func Me(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, user)
+}
+
+// Csrf : GET /csrf
+func Csrf(c echo.Context) error {
+	print(c.Request().Header.Get("origin"))
+	print("FUCK")
+	return c.NoContent(http.StatusOK)
 }
 
 // generates jwt token
