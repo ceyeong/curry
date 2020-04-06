@@ -1,14 +1,11 @@
 package server
 
 import (
-	"net/http"
-	"os"
-
 	"github.com/ceyeong/curry/database"
-	jwtlib "github.com/dgrijalva/jwt-go"
+	mid "github.com/ceyeong/curry/middleware"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 // Start : Starts server
@@ -25,46 +22,21 @@ func Start() {
 		e.Logger.Fatalf("Failed to Initalize database.\n %s", err.Error())
 	}
 	//middlewares
+	//custom context
+	e.Use(curryContext)
+	e.Use(mid.CORS())
 	//logger
 	e.Use(middleware.Logger())
 	//recover
 	e.Use(middleware.Recover())
-
+	//session
+	e.Use(mid.Session())
+	//csrf
+	e.Use(mid.CSRF())
+	//sessionAuth
+	e.Use(mid.SessionAuth())
 	//append routes
 	route(e)
-
 	//start server
-	e.Logger.Fatal(e.Start(":8000"))
-}
-
-// initialize Jwt middleware and return
-func jwt() echo.MiddlewareFunc {
-	config := middleware.JWTConfig{
-		SigningKey: []byte(os.Getenv("JWT_SECRET")),
-		ErrorHandler: func(err error) error {
-			if err == middleware.ErrJWTMissing {
-				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-			}
-			//todo check by type
-			if err.Error() == "Token is expired" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "token expired")
-			}
-			return err
-		},
-		SuccessHandler: func(c echo.Context) {
-			//extract user ID from token
-			token := c.Get("user").(*jwtlib.Token)
-			claims := token.Claims.(jwtlib.MapClaims)
-			userID := claims["user_id"].(string)
-			//set it to access globally
-			c.Set("user", userID)
-		},
-		Skipper: func(c echo.Context) bool {
-			if c.Path() == "/api/v1/login" || c.Path() == "/api/v1/register" {
-				return true
-			}
-			return false
-		},
-	}
-	return middleware.JWTWithConfig(config)
+	e.Logger.Fatal(e.Start(getHost()))
 }
