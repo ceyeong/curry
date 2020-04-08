@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// GetObjectID : returns primitive.ObjectID form of passed string
 func GetObjectID(str string) (primitive.ObjectID, error) {
 	return primitive.ObjectIDFromHex(str)
 }
