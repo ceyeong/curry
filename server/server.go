@@ -3,7 +3,6 @@ package server
 import (
 	"github.com/ceyeong/curry/database"
 	mid "github.com/ceyeong/curry/middleware"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -12,10 +11,10 @@ import (
 func Start() {
 	e := echo.New()
 
-	//load environment variables
-	if err := godotenv.Load(); err != nil {
-		e.Logger.Fatalf("Failed to load environment variables. %s", err.Error())
-	}
+	// //load environment variables
+	// if err := godotenv.Load(); err != nil {
+	// 	e.Logger.Fatalf("Failed to load environment variables. %s", err.Error())
+	// }
 
 	//initialize database instance
 	if err := database.InitDatabase(); err != nil {
