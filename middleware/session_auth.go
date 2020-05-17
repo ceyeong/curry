@@ -40,6 +40,7 @@ func SessionAuthWithConfig(config SessionAuthConfig) echo.MiddlewareFunc {
 			if user == nil {
 				return echo.ErrUnauthorized
 			}
+			c.Set("user", user.(string))
 			return next(c)
 		}
 	}

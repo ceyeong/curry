@@ -32,9 +32,10 @@ func Start() {
 	//session
 	e.Use(mid.Session())
 	//csrf
-	e.Use(mid.CSRF())
+	//e.Use(mid.CSRF())
 	//sessionAuth
-	e.Use(mid.SessionAuth())
+	//e.Use(mid.SessionAuth())
+	e.Use(mid.Auth())
 	//append routes
 	route(e)
 	//start server

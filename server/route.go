@@ -14,4 +14,5 @@ func route(e *echo.Echo) {
 
 	apiV1.GET("/me", handler.Me).Name = "me"
 	apiV1.GET("/csrf", handler.Csrf).Name = "csrf"
+	apiV1.POST("/auth/token", handler.Token).Name = "token"
 }

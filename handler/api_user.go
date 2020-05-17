@@ -8,6 +8,7 @@ import (
 	cctx "github.com/ceyeong/curry/context"
 	"github.com/ceyeong/curry/database"
 	"github.com/ceyeong/curry/model"
+	"github.com/ceyeong/curry/utils"
 	"github.com/gookit/validate"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -111,6 +112,19 @@ func LogoutUser(c echo.Context) error {
 		return err
 	}
 	return c.NoContent(http.StatusOK)
+}
+
+// Token : POST /auth/token
+func Token(c echo.Context) error {
+	if err := LoginUser(c); err != nil {
+		return err
+	}
+	token, err := utils.GenerateJWTTokens(c.Get("user").(string))
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{"message": "success", "token": token})
 }
 
 // Me : GET /me
